@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trans fats</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #ffffff;
+            --text-block-bg: #d9d9d9;
+            --accent-red: #ff0000;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-bg);
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 100vh;
+            height: 500px;
+            background: var(--card-bg);
+            border-radius: 0;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Состояния */
+        .state { display: none; flex-direction: column; align-items: center; text-align: center; }
+        .state.active { display: flex; }
+
+        /* Frame 1: Загрузка */
+        .upload-btn {
+            background: #e0e0e0;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .upload-btn:hover { background: #d0d0d0; }
+
+        /* Frame 2: Spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
+        #frame3 {
+            display: none;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #frame3.active {
+            display: flex;
+        }
+
+        .result-container {
+            display: flex;
+            flex-direction: column; /* Элементы друг под другом */
+            align-items: flex-end;   /* Выравнивание кнопки по правому краю */
+            gap: 15px;               /* Отступ между блоком и кнопкой */
+            max-width: 90%;
+        }
+
+        /* Frame 3: Результат */
+        .result-block {
+            background: var(--text-block-bg);
+            padding: 30px;
+            border-radius: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .highlight {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        /* Кнопка помощи */
+        .help-button {
+            position: fixed;
+            right: 24px;
+            bottom: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: none;
+            background-color: #4a4a4a;
+            color: #ffffff;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .help-button:hover {
+            background-color: #333333;
+        }
+
+        /* Плашка помощи */
+        .help-tooltip {
+            position: fixed;
+            right: 24px;
+            bottom: 90px;
+            max-width: 260px;
+            padding: 14px 16px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            font-size: 13px;
+            line-height: 1.4;
+            color: #222222;
+            display: none;
+            z-index: 999;
+        }
+
+        .help-tooltip.visible {
+            display: block;
+        }
+
+        .trash-btn {
+            background: #e0e0e0;
+            border-radius: 12px;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            display: flex;
+        }
+        .trash-btn:hover { background: #d0d0d0; }
+
+        /* Адаптация под телефон */
+        @media (max-width: 600px) {
+            .main-container { height: 80vh; }
+            .result-block { font-size: 12px; padding: 15px; }
+        }
+
+        input[type="file"] { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div id="frame1" class="state active">
+        <label class="upload-btn">
+            <input type="file" id="fileInput" accept="image/*">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </label>
+        <span>Load image</span>
+    </div>
+
+    <div id="frame2" class="state">
+        <div class="loader"></div>
+    </div>
+
+    <div id="frame3" class="state">
+        <div class="result-container">
+        <div class="result-block">
+            <div id="textContent">
+                
+            </div>
+        </div>
+        <button class="trash-btn" id="clearBtn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+        </button>
+    </div>
+    </div>
+</div>
+
+<!-- Кнопка помощи и подсказка -->
+<button class="help-button" id="helpBtn">?</button>
+<div class="help-tooltip" id="helpTooltip">
+    <strong>На что обратить внимание при загрузке фото:</strong><br>
+    • Качество фото: Текст должен быть четким и читаемым<br>
+    • Обрезайте фотографии чтобы на них было как можно  меньше лишнего текста (в идеале только состав)<br>
+    • Избегайте бликов на упаковке<br>
+    • Фотографируйте состав при хорошем освещении<br>
+    • Убедитесь, что текст на фото читаемый и не слишком мелкий<br>
+    • Поверхность упаковки должна быть плоской или выровненная с наименьшим кол-вом складок
+</div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+const clearBtn = document.getElementById('clearBtn');
+const API_BASE_URL = 'http://localhost:8081'; 
+const frames = {
+    1: document.getElementById('frame1'),
+    2: document.getElementById('frame2'),
+    3: document.getElementById('frame3')
+};
+const helpBtn = document.getElementById('helpBtn');
+const helpTooltip = document.getElementById('helpTooltip');
+
+function showFrame(num) {
+    Object.values(frames).forEach(f => f.classList.remove('active'));
+    frames[num].classList.add('active');
+}
+
+fileInput.addEventListener('change', async () => {
+    if (fileInput.files.length > 0) {
+        showFrame(2); 
+        const promptText = `Распознай состав на фото.
+
+        ФОРМАТ:
+        Только нижний регистр (маленькие буквы).
+        Только текст состава, без лишних фраз.
+
+        ПРАВИЛА ВЫДЕЛЕНИЯ (ОБЯЗАТЕЛЬНО):
+        Каждое слово, содержащее указанные ниже части, ДОЛЖНО быть выделено жирным **слово**. Выделяй только буквы, не трогай запятые и скобки.
+        пальмов (пример: пальмовое, пальмоядровое)
+        растительн (пример: растительные, растительный)
+        рапсов (пример: рапсовое)
+        маргарин
+        гидрогенизир
+        модифицир
+        кондитерск / кулинарн / фритюрн
+        трансжир
+
+        ЗАПРЕТЫ:
+        Не выделяй: молоко, мука, сахар, соль, вода, подсолнечное.
+        Если сомневаешься — всё равно выдели, если корень совпадает.
+
+        Если текст не читается, напиши стандартную фразу: «Мы не смогли распознать состав продукта, попробуйте сделать фото в лучшем качестве. Посмотрите инструкцию, нажав на знак вопроса.»`
+        
+        try {
+            // Конвертируем изображение в Base64
+            const file = fileInput.files[0];
+            const base64Image = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            // Отправляем запрос на наш Node.js сервер
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: promptText,
+                    mimeType: file.type,
+                    imageBase64: base64Image
+                })
+            });
+
+            if (!response.ok) {
+                console.error("Server API Error");
+                throw new Error('Ошибка ответа сервера');
+            }
+
+            const data = await response.json();
+            
+            // Извлекаем текст ответа от нашего сервера
+            const rawText = data.text || '';
+            const html = rawText.replace(/\*\*(.+?)\*\*/g, '<span class="highlight">$1</span>');
+            document.getElementById('textContent').innerHTML = html;
+            showFrame(3);
+        } catch (error) {
+            console.error(error);
+            alert('Ошибка при отправке запроса к нейросети');
+            showFrame(1);
+        }
+    }
+});
+
+clearBtn.addEventListener('click', () => {
+    fileInput.value = ''; 
+    showFrame(1);
+});
+
+
+helpBtn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    helpTooltip.classList.toggle('visible');
+});
+
+
+document.addEventListener('click', (event) => {
+    if (!helpTooltip.classList.contains('visible')) return;
+    const isClickInside =
+        helpTooltip.contains(event.target) || helpBtn.contains(event.target);
+    if (!isClickInside) {
+        helpTooltip.classList.remove('visible');
+    }
+});
+
+
+</script>
+
+</body>
+</html>
